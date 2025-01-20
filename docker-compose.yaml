@@ -1,0 +1,61 @@
+version: "3.3"
+
+services:
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+        container_name: elasticsearch
+        environment:
+            - node.name=elasticsearch # Nome do nó
+            - cluster.name=es-docker-cluster # Nome do cluster
+            - bootstrap.memory_lock=true # Impede que o processo do Elasticsearch seja swapado
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # Define o uso de memória para a JVM (mínimo e máximo 512MB)
+            - http.cors.enabled=true # Habilita CORS
+            - http.cors.allow-origin="*" # Permite requisições de qualquer origem (CORS)
+            - discovery.type=single-node # Configura o Elasticsearch como um nó único
+            - xpack.security.enabled=true
+            - ELASTIC_PASSWORD=2ubh9*rSR7u2ygw*g
+
+        ports:
+            - "9200:9200"
+
+        volumes:
+            - ./elasticsearch_data:/var/lib/elasticsearch/data
+        networks:
+            - network_vault
+
+    kibana:
+        image: docker.elastic.co/kibana/kibana:7.17.0
+        container_name: kibana
+        ports:
+            - "5601:5601"
+        environment:
+            ELASTICSEARCH_URL: http://elasticsearch:9200
+            ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+
+        volumes:
+            - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+        depends_on:
+            - elasticsearch
+        networks:
+            - network_vault
+
+    apm-server:
+        image: docker.elastic.co/apm/apm-server-oss:7.17.0 # Imagem do APM Server para monitoramento de performance
+        container_name: apm # Nome do container
+        user: "root:root" # Executa o container como root
+        volumes:
+            - ./apm-server.yml:/usr/share/apm-server/apm-server.yml # Monta o arquivo de configuração do APM
+        environment:
+            # Configurações de ambiente do apm
+            - BEAT_STRICT_PERMS=false # Acessar as configurações sem restringir permissão de usuário
+            # - BEAT_STRICT_PERMS=2 # Caso a configuração não suba os containers por conta de versão do docker
+        ports:
+            - "8200:8200" # Mapeia a porta 8200 para o APM server
+        restart: on-failure # Reinicia o container em caso de falha
+        networks:
+            - network_vault
+
+networks:
+    # nome da network "network_vault", que deve existir externamente
+    network_vault:
+        external: true
