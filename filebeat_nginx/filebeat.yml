@@ -1,0 +1,61 @@
+
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+filebeat.inputs:
+  # Logs NGINX Backend
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nginx/api-server-app-access.log
+    fields:
+      application: nginx_access_api
+    fields_under_root: true
+
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nginx/api-server-app-error.log
+    fields:
+      application: nginx_error_api
+    fields_under_root: true
+
+# Logs NGINX Frontend
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nginx/vue-app-access.log
+    fields:
+      application: nginx_access_web
+    fields_under_root: true
+
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nginx/vue-app-error.log
+    fields:
+      application: nginx_error_web
+    fields_under_root: true
+
+# Logs NGINX Kibana
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nginx/kibana-access.log
+    fields:
+      application: nginx_access_kibana
+    fields_under_root: true
+
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nginx/kibana-error.log
+    fields:
+      application: nginx_error_kibana
+    fields_under_root: true
+
+output.elasticsearch:
+  hosts: ["localhost:9200"]
+  username: "elastic"
+  password: "2ubh9*rSR7u2ygw*g"

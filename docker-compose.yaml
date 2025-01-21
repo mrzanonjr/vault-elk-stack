@@ -52,6 +52,10 @@ services:
         ports:
             - "8200:8200" # Mapeia a porta 8200 para o APM server
         restart: on-failure # Reinicia o container em caso de falha
+
+        depends_on:
+             - elasticsearch
+             
         networks:
             - network_vault
 
